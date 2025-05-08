@@ -1,6 +1,7 @@
-import os, serpapi, requests, html_to_json, json
+import serpapi, requests, html_text
 from bs4 import BeautifulSoup
 from utils import JsonManager
+from utils.secrets import Secret
 
 class BaseTool():
     def __init__(self, chat_id: int, question_id: int):
@@ -13,14 +14,14 @@ class BaseTool():
         self.json_manager.write(data)
 
 class WebTool(BaseTool):
-    def __init__(self, chat_id, question_id):
+    def __init__(self, chat_id: int, question_id: int):
         super().__init__(chat_id, question_id)
     
     def google_search(self, query: str):
         params = {
             "engine": "google",
             "q": query,
-            "api_key": "d94f04c4608c787a2a864ad17c40ede39d4392e4b696177c749d1e3f81d1e7f4"
+            "api_key": Secret().SerpAPI
         }
         search = serpapi.search(params)
         data = search.as_dict()
@@ -34,6 +35,7 @@ class WebTool(BaseTool):
             html_content = response.text
             soup = BeautifulSoup(html_content, 'html.parser')
             full_html = str(soup)
-            data = html_to_json.convert(full_html)
-        self._used_tool(json)
+            tree = html_text.parse_html(full_html)
+            data = html_text.extract_text(tree)
+        self._used_tool(data)
         return data
