@@ -7,8 +7,6 @@ ENV/
 .env
 .ipynb_checkpoints
 *.ipynb
-data/chat/*/cache/
-*.json
 .idea/
 .vscode/
 *.swp

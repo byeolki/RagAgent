@@ -1,0 +1,5 @@
+{
+    "platform": "huggingface",
+    "model_path": "meta-llama/Llama-4-Scout-17B-16E",
+    "max_context": 100000
+}

@@ -1,5 +1,6 @@
 import sys
 sys.path.append("./src/utils")
-from .func import JsonManager, id_generator, extract_answer
-from .secrets import Secret
+from .common import JsonManager, id_generator, clean_answer, parse_history, clean_parsed_history
+from .secrets import Secrets
 from .logger import Logger
+from .hparams import HParams
