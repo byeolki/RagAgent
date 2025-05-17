@@ -16,3 +16,4 @@ Thumbs.db
 *.log
 *.bak
 *.tmp
+pyrightconfig.json
