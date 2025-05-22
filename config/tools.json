@@ -1,0 +1,55 @@
+{
+    "tools": [
+        {
+            "func_name": "google_search",
+            "description": "Search Google for information on any topic using SerpAPI",
+            "parameters": {
+                "query": {
+                    "type": "string",
+                    "required": true,
+                    "description": "The search query string to find relevant information"
+                }
+            },
+            "usage_example": {
+                "func_name": "google_search",
+                "params": {
+                    "query": "artificial intelligence trends 2024"
+                }
+            }
+        },
+        {
+            "func_name": "url_access",
+            "description": "Access and retrieve HTML content from a specific URL using web scraping",
+            "parameters": {
+                "url": {
+                    "type": "string",
+                    "required": true,
+                    "description": "The complete URL to access (must include http:// or https://)"
+                }
+            },
+            "usage_example": {
+                "func_name": "url_access",
+                "params": {
+                    "url": "https://example.com/article"
+                }
+            }
+        },
+        {
+            "func_name": "delete_data",
+            "description": "Delete cached data by ID from the JSON storage",
+            "parameters": {
+                "id": {
+                    "type": "integer",
+                    "required": true,
+                    "description": "The ID of the data entry to delete from cache"
+                }
+            },
+            "usage_example": {
+                "func_name": "delete_data",
+                "params": {
+                    "id": 12345
+                }
+            }
+        }
+    ]
+}

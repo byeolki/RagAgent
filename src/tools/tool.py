@@ -1,6 +1,6 @@
 import serpapi, requests
 from bs4 import BeautifulSoup
-from utils import JsonManager, Secrets, HParams
+from utils import JsonManager, Secrets, HParams, generate_id
 
 secret = Secrets()
 
@@ -9,9 +9,15 @@ class BaseTool():
         self.json_manager = JsonManager(f"./history/{chat_id}/cache/{question_id}.json")
         self.data = self.json_manager.read()
 
-    def _used_tool(self, tool_data: dict):
+    def delete_data(self, id: int):
         data = self.json_manager.read()
-        data.append(tool_data)
+        del data[id]
+        self.json_manager.write(data)
+
+    def called_tool(self, tool_data: dict):
+        id = generate_id()
+        data = self.json_manager.read()
+        data[id] = tool_data
         self.json_manager.write(data)
 
 class WebTool(BaseTool):
@@ -25,7 +31,6 @@ class WebTool(BaseTool):
             "api_key": Secrets().serp_api
         })
         data = search.as_dict()
-        self._used_tool(data)
         return data
 
     def url_access(self, url: str):
@@ -35,9 +40,4 @@ class WebTool(BaseTool):
             html_content = response.text
             soup = BeautifulSoup(html_content, 'html.parser')
             full_html = str(soup)
-        self._used_tool(data)
         return data
-
-class CalcTool():
-    def __init__(self):
-        ...

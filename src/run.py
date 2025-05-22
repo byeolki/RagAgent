@@ -1,17 +1,17 @@
 import os
 from agent import Agent
-from utils import id_generator, Logger
+from utils import generate_id, Logger
 
 def main():
-    chat_id = id_generator()
+    chat_id = generate_id()
     agent = Agent(chat_id)
     while 1:
         question = input("Question input: ")
-        question_id = id_generator()
+        question_id = generate_id()
         logger = Logger(chat_id, question_id)
         logger.info(f"chat_id: {chat_id}, question_id: {question_id}")
         logger.info("Loaded agent")
-        if question == "exit": 
+        if question == "exit":
             logger.info("Finish Process.")
             return
         data = agent.input_question(question_id, question, logger)

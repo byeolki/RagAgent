@@ -1,5 +1,6 @@
 import ollama, os, json, re
 from tools import WebTool
+from tools.tool import BaseTool
 from utils import JsonManager, clean_answer, Logger, parse_history, clean_parsed_history
 from .prompts import PromptManager
 from .model import ChatModel
@@ -29,7 +30,7 @@ class Agent():
         json_manager.write(chat_history)
         self.chat_history = chat_history
 
-        json_manager = JsonManager(f"./history/{self.chat_id}/cache/{question_id}.json", exist_data=[])
+        json_manager = JsonManager(f"./history/{self.chat_id}/cache/{question_id}.json")
         cache = json_manager.read()
         cache[str(question_id)] = [{
             "role": "user", "content": content
@@ -40,7 +41,7 @@ class Agent():
     def handle_query(self, question_id: int, content: str):
         self.initialize_context(question_id, content)
         data = self.retrieve_documents(question_id)
-        answer = self.generate_answer(question_id, content)
+        answer = self.generate_answer(question_id, data)
         return answer
 
     def retrieve_documents(self, question_id: int):
@@ -57,23 +58,35 @@ class Agent():
         try:
             self.logger.info(answer)
             tools = json.loads(answer)
+            base_tool = BaseTool(self.chat_id, question_id)
             web_tool = WebTool(self.chat_id, question_id)
             for tool in tools:
                 tool_name, params = tool["func_name"], tool["params"]
                 if tool_name == "google_search":
-                    web_tool.google_search(**params)
+                    data = web_tool.google_search(**params)
                 elif tool_name == "url_access":
-                    web_tool.url_access(**params)
+                    data = web_tool.url_access(**params)
+                elif tool_name == "delete_data":
+                    base_tool.delete_data(**params)
+                    data = None
                 else:
                     continue
+                base_tool.called_tool({
+                    "tool_command": tool,
+                    "collected_data": data
+                })
+            if len(str(self.retrieved_data)) > 90000:
+                raise Exception("There is too much data. Delete one and add it again or add another one")
+            self.retrieved_data.append(data)
             return self.retrieve_documents(question_id)
         except Exception as e:
             self.logger.error(str(e))
+            self.internal_history.append({"role": "system", "content": f"Exception: {e}"})
             return self.retrieve_documents(question_id)
 
     def generate_answer(self, question_id: int, data: list):
         json_manager = JsonManager(f"./data/chat/{self.chat_id}/chat.json")
-        self.internal_history.append({"role": "system", "content":  self.prompt_manager._answer_prompt(data)})
+        self.internal_history.append({"role": "system", "content":  self.prompt_manager.answer_prompt(data)})
         raw_answer = self.pipe(self.internal_history)
         answer = clean_answer(raw_answer)
         self.chat_history.append({"role": "assistant", "content": answer})

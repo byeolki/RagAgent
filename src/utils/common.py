@@ -1,9 +1,10 @@
 import os, json, random, re, ast
+from bs4 import BeautifulSoup
 from snowflake import SnowflakeGenerator
 
 snowflake_gen = SnowflakeGenerator(42)
 
-def id_generator():
+def generate_id():
     return next(snowflake_gen)
 
 def parse_history(chat_history: list):
@@ -18,8 +19,18 @@ def clean_parsed_history(parsed_history: list):
     while parsed_history[index]["role"] != "user":
         del parsed_history[index]
 
+def clean_html(html: str):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    body = soup.find('body')
+    if not body:
+        return ""
+    for tag in body.find_all():
+        tag.attrs = {}
+    body.attrs = {}
+    return str(body)
+
 def clean_answer(answer):
-    ...
+    return answer
 
 class JsonManager():
     def __init__(self, path: str, exist_data={}):

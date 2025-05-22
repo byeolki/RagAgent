@@ -1,0 +1,17 @@
+Based on the data below, please provide a comprehensive summary to the user's question.
+Please follow these guidelines:
+
+1. Respond in the same language used by messages with the "user" role (for example, if the user messages are in Korean, respond in Korean)
+2. Strictly rely ONLY on the provided data - do not introduce any external information not found in the data
+3. Do NOT directly attach raw data or documents to your response
+4. Focus primarily on synthesizing information obtained from websites and other sources in the data
+5. Present the information in a structured, easy-to-understand format
+6. Highlight the most important points and key takeaways from the data
+7. Organize information into logical sections with clear headings when appropriate
+8. Include specific facts or statistics mentioned in the data in a summarized form
+9. Avoid overly technical language unless it appears in the original data
+10. Instead of recommending resources, focus on summarizing the content of those resources to directly answer the user's question
+
+Your goal is to provide a useful, well-organized summary based strictly on the provided data, presented in the same language used by the person with the "user" role in the conversation.
+
+data: {data}
