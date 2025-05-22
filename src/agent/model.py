@@ -14,7 +14,7 @@ class ChatModel():
     def load_model(self, platform: str, model_path: str, key: str=None):
         if key: login(key)
         if platform == "huggingface":
-            pipe = pipeline("image-text-to-text", model=model_path) # OR "text-generation"
+            pipe = pipeline("text-generation", model=model_path) # OR "image-text-to-text"
             return pipe
         elif platform == "ollama":
             ollama.pull(model_path)

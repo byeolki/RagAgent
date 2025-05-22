@@ -1,6 +1,6 @@
 import serpapi, requests
 from bs4 import BeautifulSoup
-from utils import JsonManager, Secrets, HParams, generate_id
+from utils import JsonManager, Secrets, HParams, generate_id, clean_html
 
 secret = Secrets()
 
@@ -34,10 +34,11 @@ class WebTool(BaseTool):
         return data
 
     def url_access(self, url: str):
-        data = {url: "Error: Not found site"}
+        data = "Error: Not found site"
         response = requests.get(url)
         if response.status_code == 200:
             html_content = response.text
             soup = BeautifulSoup(html_content, 'html.parser')
             full_html = str(soup)
+            data = clean_html(full_html)
         return data

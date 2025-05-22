@@ -9,15 +9,13 @@ def generate_id():
 
 def parse_history(chat_history: list):
     parsed_history = []
-    for question_id, questions in chat_history:
+    for question_id, questions in chat_history.items():
         for question in questions:
             parsed_history.append(question)
     return parsed_history
 
 def clean_parsed_history(parsed_history: list):
-    index = len(parsed_history) - 1
-    while parsed_history[index]["role"] != "user":
-        del parsed_history[index]
+    parsed_history = parsed_history[:-2]
 
 def clean_html(html: str):
     soup = BeautifulSoup(html_content, 'html.parser')
@@ -30,7 +28,9 @@ def clean_html(html: str):
     return str(body)
 
 def clean_answer(answer):
-    return answer
+    pattern = r'<think>.*?</think>\s*'
+    result = re.sub(pattern, '', answer, flags=re.DOTALL).strip()
+    return result
 
 class JsonManager():
     def __init__(self, path: str, exist_data={}):

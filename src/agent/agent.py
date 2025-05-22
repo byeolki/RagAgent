@@ -1,9 +1,11 @@
 import ollama, os, json, re
 from tools import WebTool
 from tools.tool import BaseTool
-from utils import JsonManager, clean_answer, Logger, parse_history, clean_parsed_history
+from utils import JsonManager, clean_answer, Logger, parse_history, clean_parsed_history, HParams
 from .prompts import PromptManager
 from .model import ChatModel
+
+hparams = HParams()
 
 class Agent():
     def __init__(self, chat_id: int):
@@ -22,7 +24,7 @@ class Agent():
     def initialize_context(self, question_id: int, content: str):
         self.logger = Logger(self.chat_id, question_id)
 
-        json_manager = JsonManager(f"./history/{self.chat_id}/chat.json", exist_data=[])
+        json_manager = JsonManager(f"./history/{self.chat_id}/chat.json", exist_data={})
         chat_history = json_manager.read()
         chat_history[str(question_id)] = [{
             "role": "user", "content": content
@@ -30,7 +32,7 @@ class Agent():
         json_manager.write(chat_history)
         self.chat_history = chat_history
 
-        json_manager = JsonManager(f"./history/{self.chat_id}/cache/{question_id}.json")
+        json_manager = JsonManager(f"./history/{self.chat_id}/cache/{question_id}.json", exist_data={})
         cache = json_manager.read()
         cache[str(question_id)] = [{
             "role": "user", "content": content
@@ -45,6 +47,7 @@ class Agent():
         return answer
 
     def retrieve_documents(self, question_id: int):
+        self.internal_history.append({"role": "system", "content":  self.prompt_manager._search_prompt()})
         self.internal_history.append({"role": "system", "content": f"Data collected to date: {self.retrieved_data}"})
         raw_answer = self.pipe(self.internal_history)
         answer = clean_answer(raw_answer)
@@ -75,8 +78,9 @@ class Agent():
                     "tool_command": tool,
                     "collected_data": data
                 })
-            if len(str(self.retrieved_data)) > 90000:
+            if len(str(self.retrieved_data)) > hparams.max_context:
                 raise Exception("There is too much data. Delete one and add it again or add another one")
+            self.internal_history.append({"role": "system", "content": answer})
             self.retrieved_data.append(data)
             return self.retrieve_documents(question_id)
         except Exception as e:
@@ -86,7 +90,7 @@ class Agent():
 
     def generate_answer(self, question_id: int, data: list):
         json_manager = JsonManager(f"./data/chat/{self.chat_id}/chat.json")
-        self.internal_history.append({"role": "system", "content":  self.prompt_manager.answer_prompt(data)})
+        self.internal_history.append({"role": "system", "content":  self.prompt_manager._answer_prompt(data)})
         raw_answer = self.pipe(self.internal_history)
         answer = clean_answer(raw_answer)
         self.chat_history.append({"role": "assistant", "content": answer})

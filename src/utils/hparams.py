@@ -6,3 +6,4 @@ class HParams(JsonManager):
         hparams = self.read()
         self.platform = hparams["platform"]
         self.model_path = hparams["model_path"]
+        self.max_context = hparams["max_context"]
