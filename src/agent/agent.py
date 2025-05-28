@@ -1,4 +1,4 @@
-import ollama, os, json, re
+import ollama, os, json, traceback
 from tools import WebTool
 from tools.tool import BaseTool
 from utils import JsonManager, clean_answer, Logger, parse_history, clean_parsed_history, HParams
@@ -46,12 +46,11 @@ class Agent():
         answer = self.generate_answer(question_id, data)
         return answer
 
-    def retrieve_documents(self, question_id: int):
-        self.internal_history.append({"role": "system", "content":  self.prompt_manager._search_prompt()})
-        self.internal_history.append({"role": "system", "content": f"Data collected to date: {self.retrieved_data}"})
+    def retrieve_documents(self, question_id: int, comment: str=""):
+        self.internal_history.append({"role": "system", "content":  self.prompt_manager._search_prompt(self.retrieved_data, comment)})
         raw_answer = self.pipe(self.internal_history)
         answer = clean_answer(raw_answer)
-        clean_parsed_history(self.internal_history)
+        self.internal_history = clean_parsed_history(self.internal_history)
         if answer == "exit":
             self.logger.info("Finish search")
             return self.retrieved_data
@@ -79,21 +78,27 @@ class Agent():
                     "collected_data": data
                 })
             if len(str(self.retrieved_data)) > hparams.max_context:
-                raise Exception("There is too much data. Delete one and add it again or add another one")
+                raise Exception("There is too much data. Delete one and add it again, or add less data than before.")
             self.internal_history.append({"role": "system", "content": answer})
             self.retrieved_data.append(data)
             return self.retrieve_documents(question_id)
+        except json.JSONDecodeError:
+            traceback.print_exc()
+            message = "Incorrect format. Please write according to the prompt."
+            self.logger.error(message)
+            return self.retrieve_documents(question_id, message)
         except Exception as e:
+            traceback.print_exc()
             self.logger.error(str(e))
-            self.internal_history.append({"role": "system", "content": f"Exception: {e}"})
-            return self.retrieve_documents(question_id)
+            return self.retrieve_documents(question_id, str(e))
 
     def generate_answer(self, question_id: int, data: list):
-        json_manager = JsonManager(f"./data/chat/{self.chat_id}/chat.json")
+        json_manager = JsonManager(f"./history/{self.chat_id}/chat.json")
         self.internal_history.append({"role": "system", "content":  self.prompt_manager._answer_prompt(data)})
+        self.logger.info(self.internal_history)
         raw_answer = self.pipe(self.internal_history)
         answer = clean_answer(raw_answer)
-        self.chat_history.append({"role": "assistant", "content": answer})
+        self.chat_history[str(question_id)].append({"role": "assistant", "content": answer})
         self.internal_history.append({"role": "assistant", "content": answer})
         json_manager.write(self.chat_history)
         return answer

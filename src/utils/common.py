@@ -15,10 +15,10 @@ def parse_history(chat_history: list):
     return parsed_history
 
 def clean_parsed_history(parsed_history: list):
-    parsed_history = parsed_history[:-2]
+    return parsed_history[:-1]
 
 def clean_html(html: str):
-    soup = BeautifulSoup(html_content, 'html.parser')
+    soup = BeautifulSoup(html, 'html.parser')
     body = soup.find('body')
     if not body:
         return ""

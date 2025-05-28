@@ -8,6 +8,7 @@ def main():
     while 1:
         question = input("Question input: ")
         question_id = generate_id()
+        print(f"ChatID: {chat_id}, QuestionID: {question_id}")
         if question == "exit":
             return
         response = agent.handle_query(question_id, question)

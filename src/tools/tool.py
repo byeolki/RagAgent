@@ -25,16 +25,23 @@ class WebTool(BaseTool):
         super().__init__(chat_id, question_id)
 
     def google_search(self, query: str):
-        search = serpapi.search(params = {
+        # search = serpapi.search(params = {
+        #     "engine": "google",
+        #     "q": query,
+        #     "api_key": Secrets().serp_api
+        # })
+        # data = search.as_dict()
+        # return data
+        url = "https://www.searchapi.io/api/v1/search"
+        response = requests.get(url, params={
             "engine": "google",
             "q": query,
-            "api_key": Secrets().serp_api
+            "api_key": secret.serp_api
         })
-        data = search.as_dict()
-        return data
+        return str(response.text)
 
     def url_access(self, url: str):
-        data = "Error: Not found site"
+        data = f"Error: Not found site, URL: {url}"
         response = requests.get(url)
         if response.status_code == 200:
             html_content = response.text
