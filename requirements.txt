@@ -1,0 +1,8 @@
+ollama
+serpapi
+transformers
+huggingface_hub
+beautifulsoup4
+requests
+python-dotenv
+snowflake-id
